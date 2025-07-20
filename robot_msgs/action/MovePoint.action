@@ -1,0 +1,10 @@
+# goal, cartesian point [x, y]
+float64[] x
+float64[] y
+---
+# le type de retour
+bool state
+---
+# le feedback
+float32 current_x
+float32 current_y

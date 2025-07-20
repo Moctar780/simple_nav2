@@ -1,0 +1,22 @@
+/OdomToPose:
+  ros__parameters:
+    init_theta: 0.0
+    init_x: 0.0
+    init_y: 0.0
+    odom_topic: /odom_filtered
+    pose_topic: /pose2d
+
+/MovePoint:
+  ros__parameters:
+   cmd_vel_topic: cmd_vel
+   vitesse: 0.2   # la vitesse maximale du robot
+   omega: 0.4     # la rotation maximale du robot
+   pose_2d_topic: pose2d      # le topic fournissant les coordonnees du robot
+   goal_accuracy: 0.01         # la distance minimal entre le robot et le but
+   angle_accuracy: 0.05        # l'angle minimal separant le robot et le point goal
+
+/PoseBag:
+  ros__parameters:
+    #option: play  # [play, record], play -> joue un fichier poses, record -> enregistree un fichier pose
+    dst_to_save: 0.2 # distance a parcourir avant l'enregistrer d'une nouvelle poses dans le fichier
+
