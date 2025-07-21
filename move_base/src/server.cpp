@@ -31,6 +31,8 @@ public:
 		goal_precision  = 	this -> declare_parameter<double>("goal_accuracy", 0.1);
 		omega           = 	this -> declare_parameter<double>("omega", 0.5);
 		vitesse         = 	this -> declare_parameter<double>("vitesse", 1.0);
+		angle_minimal   = 	this -> declare_parameter<double>("angle_minimal", 0.15);
+		vitesse_if_rotation         = 	this -> declare_parameter<double>("vitesse_if_rotation", 0.15);
 		
 
 		action_server   = rclcpp_action::create_server<nav_point>(
@@ -67,7 +69,7 @@ private:
 	void updateParameter(std::shared_ptr<robot_msgs::srv::UpdateParam::Request> req,
 							std::shared_ptr<robot_msgs::srv::UpdateParam::Response> res);
 
-	float angle_precision, goal_precision, omega, vitesse ;
+	float angle_precision, goal_precision, omega, vitesse, angle_minimal, vitesse_if_rotation ;
 
 	float const VITESSE_ZERO= 0.0f, ROTATION_ZERO = 0.0f;
 	int index;
@@ -194,9 +196,11 @@ private:
 				put_cmdvel.angular.z = omega_cmd;
 				cmd_vel->publish(put_cmdvel);
 
-				feedback->current_x = current_pose -> x;
-				feedback->current_y = current_pose -> y;
+				feedback->current_x = current_goal.real();
+				feedback->current_y = current_goal.imag();
+
 				goal_handle->publish_feedback(feedback);
+
 			}
 			
 				// Si (v==0 && omega==0) alors on considère qu’on a terminé
@@ -237,15 +241,17 @@ std::pair<float, float> Move::cmdvelRegulator(std::complex<double> &target_point
 	if (std::abs(error) > static_cast<double>(angle_precision))
 	{
 		// On tourne vers la cible
+		float v_omega = abs(error) < angle_minimal ? vitesse_if_rotation : 0.0;
 		if ( error > 0.0)
 		{
-			return {0.0f, omega};
+			return {v_omega, omega};
 		}
 		else
 		{
-			return {0.0f, -omega};
+			return {v_omega, -omega};
 
 		}
+		
 	}
 	else
 	{

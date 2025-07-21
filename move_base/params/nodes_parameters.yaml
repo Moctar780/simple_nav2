@@ -14,6 +14,8 @@
    pose_2d_topic: pose2d      # le topic fournissant les coordonnees du robot
    goal_accuracy: 0.01         # la distance minimal entre le robot et le but
    angle_accuracy: 0.1        # l'angle minimal separant le robot et le point goal
+   angle_minimal: 0.15
+   vitesse_if_rotation: 0.15
 
 /PoseBag:
   ros__parameters:

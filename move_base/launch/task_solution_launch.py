@@ -52,16 +52,22 @@ def generate_launch_description():
         allow_substs=True,
     )
 
-    simulation_node = GroupAction(
-            condition=IfCondition(PythonExpression([use_simulation])),
-            actions=[
-                    SetParameter("use_sim_time", use_sim_time),
+    turtlebot3_sim  = GroupAction(
+        condition=IfCondition(PythonExpression([use_simulation])),
+        actions=[
+            SetParameter("use_sim_time", use_sim_time),
                     IncludeLaunchDescription(
                         PythonLaunchDescriptionSource(
                         os.path.join(tb3_gazebo, "launch/turtlebot3_world.launch.py")
                         )
                         
                     ),
+        ]
+    )
+    nav2_node = GroupAction(
+            
+            actions=[
+                    
                     Node(
                         package="rviz2",
                         condition=IfCondition(PythonExpression([use_rviz])),
@@ -101,7 +107,8 @@ def generate_launch_description():
     )
      
 
-    ld.add_action(simulation_node)
+    ld.add_action(nav2_node)
+    ld.add_action(turtlebot3_sim)
     
 
     return ld
