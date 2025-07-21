@@ -68,7 +68,7 @@ install(TARGETS
 	DESTINATION lib/${PROJECT_NAME})
 
 install(
-        DIRECTORY launch utils routes rviz params maps DESTINATION share/${PROJECT_NAME}
+        DIRECTORY launch  routes rviz params maps DESTINATION share/${PROJECT_NAME}
         )
 
 install(PROGRAMS

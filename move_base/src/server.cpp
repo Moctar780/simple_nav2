@@ -168,9 +168,12 @@ private:
 			if (!state_goal)
 			{
 				goal_exist = false;
+				index = 0;
 				stop_robot();
+				auto result =  std::make_shared<nav_point::Result>();
+				result -> state = true;
+				goal_handle -> succeed(result);
 
-				return;
 			}
 			
 			auto feedback = std::make_shared<nav_point::Feedback>();
@@ -184,31 +187,20 @@ private:
 			auto [v_cmd, omega_cmd] = cmdvelRegulator(trajet_point, current_pose -> theta);
 
 			// 
-			if (v_cmd == VITESSE_ZERO && omega_cmd == ROTATION_ZERO)
+			if ( v_cmd != VITESSE_ZERO || omega_cmd != ROTATION_ZERO)
 			{
 				// si la vitesse et la rotation n'est plus necessaire on arrete le robot
-				auto result = std::make_shared<nav_point::Result>();
-				result -> state = true;
-				goal_handle -> succeed(result);
-				goal_exist = false;
-				this -> stop_robot();
-			}
-			else {
 				put_cmdvel.linear.x = v_cmd;
 				put_cmdvel.angular.z = omega_cmd;
 				cmd_vel->publish(put_cmdvel);
 
-				// Feedback
 				feedback->current_x = current_pose -> x;
 				feedback->current_y = current_pose -> y;
 				goal_handle->publish_feedback(feedback);
 			}
+			
 				// Si (v==0 && omega==0) alors on considère qu’on a terminé
 				
-		}
-		else
-		{
-			this -> stop_robot();
 		}
 		
 	}
@@ -232,8 +224,8 @@ std::pair<float, float> Move::cmdvelRegulator(std::complex<double> &target_point
 	error = std::atan2(std::sin(error), std::cos(error));
 
 	// 5) Retour d'informations pour debug
-	RCLCPP_INFO(this->get_logger(), "Dist au but: %.3f, erreur angle normalisee: %.3f (theta_robot=%.3f, theta_target=%.3f)",
-				dist, error, robot_theta, theta_target);
+	// RCLCPP_INFO(this->get_logger(), "Dist au but: %.3f, erreur angle normalisee: %.3f (theta_robot=%.3f, theta_target=%.3f)",
+	// 			dist, error, robot_theta, theta_target);
 
 	// 6) Si on est assez proche (distance faible), on arrête tout
 	if (dist < static_cast<double>(goal_precision))
