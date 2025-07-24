@@ -42,17 +42,6 @@ add_executable(convert_parc src/convert_parc.cpp)
 ament_target_dependencies(convert_parc ${DEP})
 
 
-add_executable(planner_client src/planner_client.cpp)
-ament_target_dependencies(planner_client ${DEP})
-
-
-add_executable(controller_client src/followpath.cpp)
-ament_target_dependencies(controller_client ${DEP})
-
-
-add_executable(convert_twist src/convert_twist.cpp)
-ament_target_dependencies(convert_twist ${DEP})
-
 install(TARGETS
   action_server
   ARCHIVE DESTINATION lib
@@ -62,19 +51,16 @@ install(TARGETS
 
 install(TARGETS
 	convert_parc
-  planner_client
-  controller_client
-  convert_twist
 	DESTINATION lib/${PROJECT_NAME})
 
 install(
-        DIRECTORY launch  routes rviz params maps DESTINATION share/${PROJECT_NAME}
+        DIRECTORY launch  routes  params DESTINATION share/${PROJECT_NAME}
         )
 
 install(PROGRAMS
 	src/pose_manage.py
 	src/distance.py
-  src/teleop_keyboard.py
+  	src/teleop_keyboard.py
 	DESTINATION lib/${PROJECT_NAME}
 	)
 if(BUILD_TESTING)

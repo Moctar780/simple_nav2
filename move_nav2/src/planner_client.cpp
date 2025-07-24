@@ -13,18 +13,21 @@ using namespace std::chrono_literals;
 class ClientPlanner: public rclcpp::Node
 {
     public:
-        ClientPlanner():Node("client")
+        ClientPlanner():Node("client"), start(false)
         {
             action_path = rclcpp_action::create_client<ComputPath>(this, "/compute_path_to_pose");
 
             timer = this -> create_wall_timer(1s, [this]()
         {
-            auto goal_msgs = ComputPath::Goal();
-            goal_msgs.goal = goal_pose;
-            goal_msgs.use_start = false;
-            goal_msgs.planner_id = "GridBased";
+            if (start)
+            {
+                auto goal_msgs = ComputPath::Goal();
+                goal_msgs.goal = goal_pose;
+                goal_msgs.use_start = false;
+                goal_msgs.planner_id = "GridBased";
 
-            action_path -> async_send_goal(goal_msgs);
+                action_path -> async_send_goal(goal_msgs);
+            }
         } );
             subs_goal_pose = this -> create_subscription<geometry_msgs::msg::PoseStamped>(
                     "goal_pose", 10,  [this] (std::shared_ptr<geometry_msgs::msg::PoseStamped> msg ) {
@@ -32,33 +35,13 @@ class ClientPlanner: public rclcpp::Node
                         RCLCPP_INFO(this -> get_logger(), "x : %f, y : %f, z : %f",
                                     msg -> pose.position.x, msg -> pose.position.y, msg -> pose.position.z);
                                     
-                        // auto goal_msgs = ComputPath::Goal();
-                        // goal_msgs.goal = *msg;
-                        // //goal_msgs.start = pose_init;
-                        // goal_msgs.use_start = false;
-                        // goal_msgs.planner_id = "GridBased";
+                        
+                        start =  true;
                         goal_pose = *msg;
-                        // action_path -> async_send_goal(goal_msgs);
 
                                     
                     } );
-            // subs_init_pose = this -> create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
-            //     "initialpose", 10, [this](std::shared_ptr<geometry_msgs::msg::PoseWithCovarianceStamped> pose)
-            //     {
-            //         pose_init.header  = pose -> header;
-            //         pose_init.pose = pose -> pose.pose;
-
-            //         RCLCPP_INFO( this -> get_logger(), "x: %f, y: %f, z: %f", 
-            //         pose_init.pose.position.x, pose_init.pose.position.y, 
-            //         pose_init.pose.position.z);
-            //     }
-            // );
-        
-        
-
-	    //geometry_msgs::msg::PoseStamped pose;
-	    //pose.pose.position.x = 3;
-	    
+          
 
         }
     private:
@@ -72,6 +55,7 @@ class ClientPlanner: public rclcpp::Node
         rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr subs_goal_pose;
         // rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr subs_init_pose;
         // geometry_msgs::msg::PoseStamped pose_init;
+        bool start;
         geometry_msgs::msg::PoseStamped goal_pose;
         rclcpp::TimerBase::SharedPtr timer;
         // std::unique_ptr<ActionClient> action_client;

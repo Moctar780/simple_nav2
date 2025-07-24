@@ -134,7 +134,7 @@ class DistanceEstimation(Node):
         
         self.tf_broadcaster.sendTransform(transform)
         # Log the current estimated pose and orientation
-        # self.get_logger().info(f"pose: [x: {self.pose_robot[0]}, y: {self.pose_robot[1]}], thata: {self.imu_data}")
+        self.get_logger().info(f"pose: [x: {self.pose_robot[0]}, y: {self.pose_robot[1]}], thata: {self.imu_data}")
     
     def imu_call(self, msg: Imu):
         """

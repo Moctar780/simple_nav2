@@ -11,7 +11,7 @@ find_package(parc_robot_bringup REQUIRED)
 find_package(parc_robot_description REQUIRED)
 find_package(clearpath_gz REQUIRED)
 
-install(DIRECTORY launch rviz DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY launch rviz params routes  DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

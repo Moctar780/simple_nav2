@@ -35,9 +35,9 @@ from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
     # Get the launch directory
-    move_base_dir = FindPackageShare(package="move_base").find("move_base")
-    launch_dir = os.path.join(move_base_dir, 'launch')
-    sim_dir = get_package_share_directory("turtlebot3_gazebo") + "/launch"
+    move_nav2_dir = FindPackageShare(package="move_nav2").find("move_nav2")
+    launch_dir = os.path.join(move_nav2_dir, 'launch')
+    sim_dir = get_package_share_directory("tb3_gazebo") + "/launch"
 
     # Create the launch configuration variables
     namespace = LaunchConfiguration('namespace')
@@ -101,7 +101,7 @@ def generate_launch_description():
     )
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
-        'map', default_value=os.path.join(move_base_dir, "maps/house.yaml"), description='Full path to map yaml file to load'
+        'map', default_value=os.path.join(move_nav2_dir, "maps/house.yaml"), description='Full path to map yaml file to load'
     )
 
     declare_use_localization_cmd = DeclareLaunchArgument(
@@ -117,10 +117,11 @@ def generate_launch_description():
 
     declare_params_file_cmd = DeclareLaunchArgument(
         'params_file',
-        default_value=os.path.join(move_base_dir, 'params', 'nav2_params.yaml'),
+        default_value=os.path.join(move_nav2_dir, 'params', 'nav2_params.yaml'),
         description='Full path to the ROS2 parameters file to use for all launched nodes',
     )
 
+    print(os.path.join(move_nav2_dir, 'params', 'nav2_params.yaml'))
     declare_autostart_cmd = DeclareLaunchArgument(
         'autostart',
         default_value='True',
@@ -214,20 +215,21 @@ def generate_launch_description():
                     package="nav2_controller",
                     executable="controller_server",
                     parameters=[configured_params, {"use_sim_time": use_sim_time}],
-                    remappings=[('cmd_vel', 'cmd_vel_stamped')]
                 ),
                 Node(
                     package="nav2_tuto",
                     executable="follow_path",
                 ),
+               
                 Node(
-                    package="nav2_tuto",
-                    executable="convert",
-                ),
-                Node(
-                    package="move_base",
+                    package="move_nav2",
                     executable="planner_client"
-                )
+                ),
+                # Node(
+                #     package="move_nav2",
+                #     executable="label_point.py",
+                #     parameters=[{"option": }]
+                # )
             ]
         
     )

@@ -9,10 +9,10 @@
 /MovePoint:
   ros__parameters:
    cmd_vel_topic: cmd_vel
-   vitesse: 0.3   # la vitesse maximale du robot
+   vitesse: 1.0   # la vitesse maximale du robot
    omega: 0.4     # la rotation maximale du robot
    pose_2d_topic: pose2d      # le topic fournissant les coordonnees du robot
-   goal_accuracy:  0.01 # turtlebot3        # la distance minimal entre le robot et le but
+   goal_accuracy: 0.01        # la distance minimal entre le robot et le but
    angle_accuracy: 0.1        # l'angle minimal separant le robot et le point goal
    angle_minimal: 0.15
    vitesse_if_rotation: 0.15
@@ -20,5 +20,5 @@
 /PoseBag:
   ros__parameters:
     #option: play  # [play, record], play -> joue un fichier poses, record -> enregistree un fichier pose
-    dst_to_save: 0.4 # distance a parcourir avant l'enregistrer d'une nouvelle poses dans le fichier
+    dst_to_save: 0.5 # distance a parcourir avant l'enregistrer d'une nouvelle poses dans le fichier
 
