@@ -42,6 +42,10 @@ add_executable(convert_parc src/convert_parc.cpp)
 ament_target_dependencies(convert_parc ${DEP})
 
 
+add_executable(cancel_goal src/cancel_goal.cpp)
+ament_target_dependencies(cancel_goal ${DEP})
+
+
 install(TARGETS
   action_server
   ARCHIVE DESTINATION lib
@@ -51,6 +55,7 @@ install(TARGETS
 
 install(TARGETS
 	convert_parc
+  cancel_goal
 	DESTINATION lib/${PROJECT_NAME})
 
 install(

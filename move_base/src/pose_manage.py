@@ -11,7 +11,7 @@ import os
 from launch_ros.substitutions import FindPackageShare
 from rclpy.action import ActionClient
 from robot_msgs.action import MovePoint
-
+from rclpy.action.client import CancelGoal, ClientGoalHandle
 move_base = FindPackageShare(package='move_base').find("move_base")
 import time
 class PoseBag(Node):
@@ -55,7 +55,6 @@ class PoseBag(Node):
             self.get_logger().info(f"number of point in path: {len(self.poses_path.poses)}")
             self.get_logger().info("end of display path")
             self.file.close()
-            self.file = None
             timer = self.create_timer(1, self.publishPath)
         else:
             """option mode option: read file send to action_move and publish path
@@ -72,11 +71,11 @@ class PoseBag(Node):
             goal = MovePoint.Goal()
             goal.x = x_y_coord[0]
             goal.y = x_y_coord[1]
-            
             action_client.send_goal_async(goal)
+            sys.exit(0)
             
             
-                
+    
     def publishPath(self,):
         """publish path to the topic /plan
         """

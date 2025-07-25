@@ -89,7 +89,7 @@ class DistanceEstimation(Node):
         odom_msgs.header.frame_id = "base_footprint"
         odom_msgs.header.stamp.nanosec = time[1]
         odom_msgs.header.stamp.sec = time[0]
-        odom_msgs.child_frame_id = "odom_filtre"
+        odom_msgs.child_frame_id = "odom"
         
         new = msg.twist.twist.linear.x, msg.twist.twist.angular.z
         
@@ -134,7 +134,7 @@ class DistanceEstimation(Node):
         
         self.tf_broadcaster.sendTransform(transform)
         # Log the current estimated pose and orientation
-        self.get_logger().info(f"pose: [x: {self.pose_robot[0]}, y: {self.pose_robot[1]}], thata: {self.imu_data}")
+        # self.get_logger().info(f"pose: [x: {self.pose_robot[0]}, y: {self.pose_robot[1]}], thata: {self.imu_data}")
     
     def imu_call(self, msg: Imu):
         """

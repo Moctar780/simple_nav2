@@ -35,7 +35,7 @@ def generate_launch_description():
     use_rviz     = LaunchConfiguration("use_rviz", default=False)
    
     # rviz setup file content, task2 configuration
-    rviz_config_file = os.path.join(move_base, "rviz/task2.rviz")
+    rviz_config_file = os.path.join(move_base, "rviz/move.rviz")
     
     # params file for all node content their parameters
     params_file = os.path.join(move_base, "params/nodes_parameters.yaml")
@@ -75,12 +75,13 @@ def generate_launch_description():
                         name="rviz2",
                         output="screen",
                         arguments=["-d", rviz_config_file],
+                        parameters=[{"use_sim_time": use_sim_time}]
                         ),
                     Node(
                         package="move_base",
                         executable="convert_parc",
                         name="OdomToPose",
-                        parameters=[{"odom_topic": convert_topic}],
+                        parameters=[{"odom_topic": convert_topic}, {"use_sim_time": use_sim_time}],
 
                         ),
                     Node(
@@ -88,19 +89,20 @@ def generate_launch_description():
                         package="move_base",
                         executable="nav_action_server",
                         name="MovePoint",
-                        parameters=[configured_params],
+                        parameters=[configured_params, {"use_sim_time": use_sim_time}],
 
                         ),
                     Node(
                         condition=IfCondition(PythonExpression([use_estimator])),
                         package="move_base",
                         executable="distance.py",
+                        parameters=[{"use_sim_time": use_sim_time}]
                         ),
                     Node(
                         condition=IfCondition(PythonExpression([use_pose_manage])),
                         package="move_base",
                         executable="pose_manage.py",
-                        parameters=[configured_params, {"filename": filename}, {"option": option}]
+                        parameters=[configured_params, {"filename": filename}, {"option": option}, {"use_sim_time": use_sim_time}]
                         )
                     
             ]

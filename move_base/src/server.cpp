@@ -2,6 +2,8 @@
 #include <functional>
 #include <thread>
 #include <complex>
+#include <cmath>
+
 #include <chrono>
 #include <robot_msgs/action/move_point.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -11,7 +13,8 @@
 #include <rclcpp_components/register_node_macro.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <robot_msgs/srv/update_param.hpp>
-
+#include <nav_msgs/msg/path.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 using namespace std::placeholders;
 using namespace std::chrono_literals;
 
@@ -21,7 +24,7 @@ public:
 	using nav_point = robot_msgs::action::MovePoint;
 	using goal_point = rclcpp_action::ServerGoalHandle<nav_point>;
 
-	Move(const rclcpp::NodeOptions &option = rclcpp::NodeOptions()) : Node("MovePoint", option), goal_exist(false), index(0)
+	Move(const rclcpp::NodeOptions &option = rclcpp::NodeOptions()) : Node("MovePoint", option), goal_exist(false), index(0), dist_t(0)
 	{
 		action_name     = 	this -> declare_parameter("action_name", "move_base");
 		cmd_vel_topic   = 	this -> declare_parameter("cmd_vel_topic", "cmd_vel");
@@ -47,9 +50,13 @@ public:
 			std::bind(&Move::execute, this, _1));
 
 		cmd_vel         = this->create_publisher<geometry_msgs::msg::Twist>(cmd_vel_topic, 10);
-		
+
+		timer_path_pub  = this -> create_wall_timer(1s, std::bind(&Move::pathPublish, this));
+		path_pub        = this -> create_publisher<nav_msgs::msg::Path>("plan", 10);
+
 		update_param    = this-> create_service<robot_msgs::srv::UpdateParam>("update", std::bind(&Move::updateParameter, this, _1, _2));
 		RCLCPP_INFO(this->get_logger(), "Demarrage du serveur [%s] ...", action_name.c_str());
+
 	}
 
 private:
@@ -62,17 +69,22 @@ private:
 	rclcpp::Subscription<geometry_msgs::msg::Pose2D>::SharedPtr robot_pose;
 
 	rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_vel;
+	rclcpp::Publisher<nav_msgs::msg::Path>::SharedPtr path_pub;
 
+	rclcpp::TimerBase::SharedPtr timer_path_pub;
 	// service update MoveToPoint parameters
 	rclcpp::Service<robot_msgs::srv::UpdateParam>::SharedPtr update_param;
 
 	void updateParameter(std::shared_ptr<robot_msgs::srv::UpdateParam::Request> req,
 							std::shared_ptr<robot_msgs::srv::UpdateParam::Response> res);
+	
+	
 
 	float angle_precision, goal_precision, omega, vitesse, angle_minimal, vitesse_if_rotation ;
 
 	float const VITESSE_ZERO= 0.0f, ROTATION_ZERO = 0.0f;
 	int index;
+	float dist_t;
 
 	// position en cour du robot
 	geometry_msgs::msg::Pose2D current_pose;
@@ -82,7 +94,39 @@ private:
 	// fonction fournissant la commande de la vitesse
 	// et de la rotation a la base mobile
 	std::pair<float, float> cmdvelRegulator(std::complex<double> &, double);
-	// function to get robot pose
+	// function to  publish current path
+	void pathPublish()
+	{
+		if (goal_exist)
+		{
+			auto path = nav_msgs::msg::Path();
+			path.header.frame_id = "odom";
+			path.header.stamp = this -> get_clock() -> now();
+			float dist_total = 0;
+
+			for(u_int i = index -1 ; i < goal_handle -> get_goal() -> x.size() ; i++ )
+			{
+				auto pose = geometry_msgs::msg::PoseStamped();
+				pose.pose.position.x = goal_handle -> get_goal() -> x[i];
+				pose.pose.position.y = goal_handle -> get_goal() -> y[i];
+
+				path.poses.push_back(pose);
+				dist_total += this -> dist(pose.pose.position.x, pose.pose.position.y, 
+											goal_handle -> get_goal() -> x[i+1],
+											goal_handle -> get_goal() -> y[i+1]);
+			}
+			path_pub -> publish(path);
+
+			dist_t = dist_total;
+		}
+		
+
+	}
+
+	float dist(int p1_x, int p1_y, int p2_x, int p2_y)
+	{
+		return sqrt( pow(p1_x - p2_x, 2) + pow(p1_y - p2_y, 2));
+	}
 
 	rclcpp_action::GoalResponse handle_goal(
 
@@ -101,6 +145,9 @@ private:
 		const std::shared_ptr<goal_point> goal_handle)
 	{
 		RCLCPP_INFO(this->get_logger(), "received request to cancel goal");
+		index = 0;
+		goal_exist = false;
+		this -> stop_robot();
 
 		return rclcpp_action::CancelResponse::ACCEPT;
 	}
@@ -200,7 +247,8 @@ private:
 				feedback->current_y = current_goal.imag();
 
 				goal_handle->publish_feedback(feedback);
-
+				// RCLCPP_INFO( this -> get_logger(), "Distance restant: %f, temps restant: %f", dist_t, static_cast<double> (dist_t)/vitesse);
+				// std::cout << "Distance restante : " << dist_t << " temps restant : " << dist_t / vitesse << "\n";
 			}
 			
 				// Si (v==0 && omega==0) alors on considère qu’on a terminé
