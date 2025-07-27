@@ -33,6 +33,7 @@ def generate_launch_description():
     use_move_server = LaunchConfiguration("use_move_server", default=True)
     use_sim_time = LaunchConfiguration("use_sim_time", default=True)
     use_rviz     = LaunchConfiguration("use_rviz", default=False)
+    autostart     = LaunchConfiguration("autostart", default=True)
    
     # rviz setup file content, task2 configuration
     rviz_config_file = os.path.join(move_base, "rviz/move.rviz")
@@ -41,6 +42,8 @@ def generate_launch_description():
     params_file = os.path.join(move_base, "params/nodes_parameters.yaml")
     # start simulation test or real robot
     use_simulation = LaunchConfiguration("use_simulation", default=True)
+    
+    lifecycle_node = ["MovePoint"]
     
     configured_params = ParameterFile(
         RewrittenYaml(
@@ -87,7 +90,7 @@ def generate_launch_description():
                     Node(
                         condition=IfCondition(PythonExpression([use_move_server])),
                         package="move_base",
-                        executable="nav_action_server",
+                        executable="move_server",
                         name="MovePoint",
                         parameters=[configured_params, {"use_sim_time": use_sim_time}],
 
@@ -103,7 +106,15 @@ def generate_launch_description():
                         package="move_base",
                         executable="pose_manage.py",
                         parameters=[configured_params, {"filename": filename}, {"option": option}, {"use_sim_time": use_sim_time}]
-                        )
+                        ),
+                    Node(
+                        package='nav2_lifecycle_manager',
+                        executable='lifecycle_manager',
+                        name='lifecycle_manager_move_point',
+                        output='screen',
+                        parameters=[{'autostart': autostart}, {'node_names': lifecycle_node}],
+            ),
+                    
                     
             ]
     )

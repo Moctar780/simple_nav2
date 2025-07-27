@@ -16,6 +16,8 @@ find_package(geometry_msgs REQUIRED)
 find_package(tf2 REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav2_msgs REQUIRED)
+find_package(move_base REQUIRED)
+find_package(rclcpp_lifecycle REQUIRED)
 set ( DEP
   rclcpp
   rclcpp_action
@@ -26,17 +28,13 @@ set ( DEP
   sensor_msgs
   nav2_msgs
   rclcpp_components
+  move_base
+  rclcpp_lifecycle
 )
-add_library(action_server SHARED
-  src/server.cpp)
-target_include_directories(action_server PRIVATE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-target_compile_definitions(action_server
-  PRIVATE "ACTION_TUTORIALS_CPP_BUILDING_DLL")
-ament_target_dependencies(action_server ${DEP})
-
-rclcpp_components_register_node(action_server PLUGIN "Move" EXECUTABLE nav_action_server)
+include_directories(
+        include
+)
+install(DIRECTORY include DESTINATION include)
 
 add_executable(convert_parc src/convert_parc.cpp)
 ament_target_dependencies(convert_parc ${DEP})
@@ -46,16 +44,15 @@ add_executable(cancel_goal src/cancel_goal.cpp)
 ament_target_dependencies(cancel_goal ${DEP})
 
 
-install(TARGETS
-  action_server
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-  )
+
+add_executable(move_server src/server_imp.cpp include/move_base/server.hpp)
+ament_target_dependencies(move_server ${DEP})
+
 
 install(TARGETS
 	convert_parc
   cancel_goal
+  move_server
 	DESTINATION lib/${PROJECT_NAME})
 
 install(
