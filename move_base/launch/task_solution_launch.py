@@ -34,7 +34,7 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration("use_sim_time", default=True)
     use_rviz     = LaunchConfiguration("use_rviz", default=False)
     autostart     = LaunchConfiguration("autostart", default=True)
-   
+    world           = LaunchConfiguration("world", default="world")
     # rviz setup file content, task2 configuration
     rviz_config_file = os.path.join(move_base, "rviz/move.rviz")
     
@@ -61,7 +61,7 @@ def generate_launch_description():
             SetParameter("use_sim_time", use_sim_time),
                     IncludeLaunchDescription(
                         PythonLaunchDescriptionSource(
-                        os.path.join(tb3_gazebo, "launch/turtlebot3_world.launch.py")
+                        os.path.join(tb3_gazebo, "launch", "turtlebot3_world.launch.py" if world == "world" else "turtlebot3_house.launch.py")
                         )
                         
                     ),

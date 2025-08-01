@@ -88,6 +88,9 @@ namespace agrobot
 
             // speed if angle minimal is necessary
             float vitesse_if_rotation;
+
+            //path length
+            u_int length;
             // goal handle [ set of points]
             std::shared_ptr<goal_point> goal_handle;
 
@@ -101,6 +104,12 @@ namespace agrobot
 
             // push current goal to move the robot in this goal
             void executeGoal(std::shared_ptr<geometry_msgs::msg::Pose2D> pose);
+
+            // get current path dist
+            float getPathLenght();
+
+            // distance between two point
+            float dist(float, float, float, float);
 
             // get goal by index
             geometry_msgs::msg::Point getGoalByIndex(u_int index);

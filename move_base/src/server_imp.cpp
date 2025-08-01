@@ -43,6 +43,7 @@ CallBackReturn Move::on_configure(const rclcpp_lifecycle::State &)
 
 
     index = 0;
+    length = 0;
 
     pub_cmd =  this -> create_publisher<geometry_msgs::msg::Twist>(cmd_topic, 10);
 
@@ -255,18 +256,30 @@ void Move::publishGoalInfo()
 			auto path = nav_msgs::msg::Path();
 			path.header.frame_id = "odom";
 			path.header.stamp = this -> get_clock() -> now();
-
+            float dist_cumule = 0.0;
 			for(u_int i = index -1 ; i < goal_handle -> get_goal() -> x.size() ; i++ )
 			{
 				auto pose = geometry_msgs::msg::PoseStamped();
-				pose.pose.position.x = goal_handle -> get_goal() -> x[i];
-				pose.pose.position.y = goal_handle -> get_goal() -> y[i];
+                auto current_point = getGoalByIndex(i);
 
+				pose.pose.position.x = current_point.x;
+				pose.pose.position.y = current_point.y;
 				path.poses.push_back(pose);
 				
 			}
 			pub_path -> publish(path);
         }
+}
+
+float Move::getPathLenght()
+{
+    float distance_total = 0.0;
+    //for(u_int i = index; i < )
+}
+
+float dist(float x1, float x2, float y1, float y2)
+{
+    return sqrt( pow(x1 - y1, 2) + pow(x2 - y2, 2));
 }
 int main(int argc, char** argv)
 {

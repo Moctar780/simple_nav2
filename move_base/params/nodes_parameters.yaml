@@ -20,5 +20,5 @@
 /PoseBag:
   ros__parameters:
     #option: play  # [play, record], play -> joue un fichier poses, record -> enregistree un fichier pose
-    dst_to_save: 0.4 # distance a parcourir avant l'enregistrer d'une nouvelle poses dans le fichier
+    dst_to_save: 0.2 # distance a parcourir avant l'enregistrer d'une nouvelle poses dans le fichier
 
